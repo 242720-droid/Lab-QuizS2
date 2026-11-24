@@ -12,7 +12,9 @@
  * 9. One-to-Many & Many-to-One relationship verification
  */
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+require('dotenv').config();
+
+const BASE_URL = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3001}`;
 const API_KEY = process.env.API_KEY || 'food-quiz-secret-key-2026';
 
 let passed = 0;
