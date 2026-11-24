@@ -1,0 +1,316 @@
+{
+  "info": {
+    "name": "Online Food Ordering System - NestJS REST APIs",
+    "description": "Postman Collection for CS-301L Lab Quiz Q2 - Online Food Ordering System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "food-quiz-secret-key-2026",
+      "type": "string"
+    },
+    {
+      "key": "restaurantId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "menuItemId",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Restaurants",
+      "item": [
+        {
+          "name": "GET All Restaurants",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/restaurants",
+              "host": ["{{baseUrl}}"],
+              "path": ["restaurants"]
+            },
+            "description": "Fetch all restaurants along with their associated menu items"
+          }
+        },
+        {
+          "name": "GET Restaurant by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/restaurants/{{restaurantId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["restaurants", "{{restaurantId}}"]
+            },
+            "description": "Fetch single restaurant with its menu items"
+          }
+        },
+        {
+          "name": "POST Create Restaurant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Gourmet Burger Kitchen\",\n  \"address\": \"42 Culinary Ave, Suite 101\",\n  \"cuisine\": \"American Fast Food\",\n  \"phone\": \"+1-555-0123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/restaurants",
+              "host": ["{{baseUrl}}"],
+              "path": ["restaurants"]
+            },
+            "description": "Create a new restaurant in PostgreSQL"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Menu Items (Protected by ApiKeyGuard)",
+      "item": [
+        {
+          "name": "GET All Menu Items (Valid Key)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/menu-items",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu-items"]
+            },
+            "description": "Fetch all menu items protected by ApiKeyGuard"
+          }
+        },
+        {
+          "name": "GET Menu Items Filtered by Restaurant",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/menu-items?restaurantId={{restaurantId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu-items"],
+              "query": [
+                {
+                  "key": "restaurantId",
+                  "value": "{{restaurantId}}"
+                }
+              ]
+            },
+            "description": "Fetch menu items belonging to specific restaurant"
+          }
+        },
+        {
+          "name": "GET Menu Item by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/menu-items/{{menuItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu-items", "{{menuItemId}}"]
+            },
+            "description": "Fetch single menu item by ID"
+          }
+        },
+        {
+          "name": "POST Create Menu Item (Valid)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Truffle Bacon Cheeseburger\",\n  \"description\": \"Angus beef patty with truffle aioli, aged cheddar, and crispy bacon on brioche.\",\n  \"price\": 14.99,\n  \"category\": \"Fast Food\",\n  \"restaurantId\": 1,\n  \"isAvailable\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/menu-items",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu-items"]
+            },
+            "description": "Create menu item associated with restaurant"
+          }
+        },
+        {
+          "name": "PATCH Update Menu Item",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 15.49,\n  \"description\": \"Updated description: Signature brioche bun with crispy caramelized bacon.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/menu-items/{{menuItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu-items", "{{menuItemId}}"]
+            },
+            "description": "Update menu item price or fields"
+          }
+        },
+        {
+          "name": "DELETE Menu Item",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/menu-items/{{menuItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu-items", "{{menuItemId}}"]
+            },
+            "description": "Delete a menu item by ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Validation & Guard Rejection Tests",
+      "item": [
+        {
+          "name": "GUARD TEST: Missing API Key (Expect 401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menu-items",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu-items"]
+            },
+            "description": "Testing ApiKeyGuard rejection when x-api-key header is omitted"
+          }
+        },
+        {
+          "name": "GUARD TEST: Invalid API Key (Expect 401)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "wrong-invalid-key",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/menu-items",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu-items"]
+            },
+            "description": "Testing ApiKeyGuard rejection when incorrect key is sent"
+          }
+        },
+        {
+          "name": "DTO VALIDATION: Empty Name (Expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"price\": 10,\n  \"category\": \"Fast Food\",\n  \"restaurantId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/menu-items",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu-items"]
+            },
+            "description": "Testing class-validator @IsNotEmpty on name"
+          }
+        },
+        {
+          "name": "DTO VALIDATION: Negative Price (Expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Crispy Fries\",\n  \"price\": -5.00,\n  \"category\": \"Fast Food\",\n  \"restaurantId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/menu-items",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu-items"]
+            },
+            "description": "Testing class-validator @IsPositive on price"
+          }
+        }
+      ]
+    }
+  ]
+}

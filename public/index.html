@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FoodHub - Online Food Ordering System</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Responsive Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm py-2">
+    <div class="container-fluid px-lg-4">
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold fs-4" href="#">
+        <span class="brand-icon d-inline-flex align-items-center justify-content-center bg-warning text-dark rounded-3 px-2 py-1">
+          <i class="bi bi-egg-fried"></i>
+        </span>
+        <span class="text-white">Food<span class="text-warning">Hub</span></span>
+      </a>
+
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-lg-2">
+          <li class="nav-item">
+            <a class="nav-link active" href="#restaurantsSection"><i class="bi bi-shop me-1"></i> Restaurants</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#addMenuSection"><i class="bi bi-plus-circle me-1"></i> Add Menu Item</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#menuSection"><i class="bi bi-journal-text me-1"></i> Menu Catalog</a>
+          </li>
+        </ul>
+
+        <!-- API Key Status and Quick Controls -->
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <div class="badge bg-secondary-subtle text-light border border-secondary d-flex align-items-center gap-1 px-3 py-2 rounded-pill">
+            <i class="bi bi-shield-lock-fill text-warning"></i>
+            <span class="small">API Key:</span>
+            <code id="apiKeyDisplay" class="text-warning text-truncate" style="max-width: 140px;">food-quiz-secret-key-2026</code>
+            <button class="btn btn-sm btn-link text-white p-0 ms-1" title="Configure API Key" data-bs-toggle="modal" data-bs-target="#apiKeyModal">
+              <i class="bi bi-gear-fill"></i>
+            </button>
+          </div>
+          <button class="btn btn-outline-warning btn-sm d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#addRestaurantModal">
+            <i class="bi bi-plus-lg"></i> New Restaurant
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Notification Toast Container -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1090;">
+    <div id="liveToast" class="toast align-items-center border-0 text-white" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body d-flex align-items-center gap-2" id="toastMessage">
+          <!-- Notification Text -->
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero Header / Dashboard Stats -->
+  <header class="hero-banner py-4 text-white mb-4 shadow-sm">
+    <div class="container-fluid px-lg-4">
+      <div class="row align-items-center gy-3">
+        <div class="col-md-7">
+          <span class="badge bg-warning text-dark px-3 py-1 rounded-pill mb-2 fw-semibold">
+            <i class="bi bi-award-fill me-1"></i> Full Stack Lab Quiz - Q2 (25 Marks)
+          </span>
+          <h1 class="display-6 fw-bold mb-1">Online Food Ordering System</h1>
+          <p class="text-white-50 mb-0">
+            Powered by <strong>NestJS</strong>, <strong>PostgreSQL</strong>, <strong>TypeORM</strong>, and <strong>Bootstrap 5</strong> with DTO validation, Guard, and Middleware.
+          </p>
+        </div>
+        <div class="col-md-5">
+          <div class="row g-2">
+            <div class="col-6">
+              <div class="stat-card p-3 rounded-3 text-center bg-white bg-opacity-10 border border-white border-opacity-10 backdrop-blur">
+                <i class="bi bi-buildings fs-3 text-warning"></i>
+                <div class="h3 fw-bold mb-0 mt-1" id="statRestaurantsCount">0</div>
+                <div class="small text-white-50">Restaurants</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="stat-card p-3 rounded-3 text-center bg-white bg-opacity-10 border border-white border-opacity-10 backdrop-blur">
+                <i class="bi bi-cup-hot fs-3 text-warning"></i>
+                <div class="h3 fw-bold mb-0 mt-1" id="statMenuItemsCount">0</div>
+                <div class="small text-white-50">Menu Items</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container-fluid px-lg-4 mb-5">
+
+    <!-- Alert Banner Container for Dynamic Feedback -->
+    <div id="alertContainer"></div>
+
+    <!-- Row: Left Side (Add Menu Item Form) & Right Side (Restaurant Management) -->
+    <div class="row g-4 mb-4">
+
+      <!-- Left Column: Form to Add Menu Items -->
+      <div class="col-lg-6" id="addMenuSection">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
+            <h5 class="card-title mb-0 fw-bold d-flex align-items-center gap-2 text-dark">
+              <i class="bi bi-patch-plus text-warning fs-4"></i> Add Menu Item
+            </h5>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+              One-to-Many Relation
+            </span>
+          </div>
+
+          <div class="card-body p-4">
+            <form id="addMenuItemForm" novalidate>
+              <div class="row g-3">
+                
+                <!-- Restaurant Selection -->
+                <div class="col-12">
+                  <label for="itemRestaurant" class="form-label fw-semibold">
+                    Select Restaurant <span class="text-danger">*</span>
+                  </label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-shop"></i></span>
+                    <select class="form-select" id="itemRestaurant" required>
+                      <option value="" disabled selected>-- Choose a Restaurant --</option>
+                    </select>
+                  </div>
+                  <div class="invalid-feedback" id="restaurantError">Please select a valid restaurant.</div>
+                  <div class="form-text">Menu items must belong to an existing restaurant in the database.</div>
+                </div>
+
+                <!-- Menu Item Name -->
+                <div class="col-md-7">
+                  <label for="itemName" class="form-label fw-semibold">
+                    Item Name <span class="text-danger">*</span>
+                  </label>
+                  <input type="text" class="form-control" id="itemName" placeholder="e.g. Classic Beef Burger" required>
+                  <div class="invalid-feedback" id="nameError">Item name must not be empty.</div>
+                </div>
+
+                <!-- Price -->
+                <div class="col-md-5">
+                  <label for="itemPrice" class="form-label fw-semibold">
+                    Price ($) <span class="text-danger">*</span>
+                  </label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light">$</span>
+                    <input type="number" class="form-control" id="itemPrice" step="0.01" min="0.01" placeholder="12.99" required>
+                  </div>
+                  <div class="invalid-feedback" id="priceError">Price must be a positive number (> 0).</div>
+                </div>
+
+                <!-- Category -->
+                <div class="col-md-6">
+                  <label for="itemCategory" class="form-label fw-semibold">
+                    Category <span class="text-danger">*</span>
+                  </label>
+                  <select class="form-select" id="itemCategory" required>
+                    <option value="" disabled selected>-- Choose Category --</option>
+                    <option value="Fast Food">🍔 Fast Food</option>
+                    <option value="Main Course">🍲 Main Course</option>
+                    <option value="Appetizers">🥗 Appetizers</option>
+                    <option value="Desserts">🍰 Desserts</option>
+                    <option value="Beverages">🥤 Beverages</option>
+                    <option value="Pizza & Pasta">🍕 Pizza & Pasta</option>
+                  </select>
+                  <div class="invalid-feedback">Please select a category.</div>
+                </div>
+
+                <!-- Availability Switch -->
+                <div class="col-md-6 d-flex align-items-center">
+                  <div class="form-check form-switch pt-3">
+                    <input class="form-check-input" type="checkbox" role="switch" id="itemAvailable" checked>
+                    <label class="form-check-label fw-semibold" for="itemAvailable">
+                      Available for Ordering
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Description -->
+                <div class="col-12">
+                  <label for="itemDescription" class="form-label fw-semibold">Description</label>
+                  <textarea class="form-control" id="itemDescription" rows="2" placeholder="e.g. Juicy grilled beef patty with cheddar cheese, lettuce, tomatoes and special sauce."></textarea>
+                </div>
+
+                <!-- Form Submit Button -->
+                <div class="col-12 pt-2">
+                  <button type="submit" class="btn btn-warning w-100 fw-bold py-2 d-flex align-items-center justify-content-center gap-2" id="saveItemBtn">
+                    <i class="bi bi-plus-circle-fill"></i> Add Menu Item to Database
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Restaurant Management -->
+      <div class="col-lg-6" id="restaurantsSection">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
+            <h5 class="card-title mb-0 fw-bold d-flex align-items-center gap-2 text-dark">
+              <i class="bi bi-buildings text-primary fs-4"></i> Restaurant Management
+            </h5>
+            <button class="btn btn-sm btn-primary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#addRestaurantModal">
+              <i class="bi bi-plus-lg"></i> Add Restaurant
+            </button>
+          </div>
+
+          <div class="card-body p-4">
+            <p class="text-muted small mb-3">
+              Restaurants stored in PostgreSQL. Click on any restaurant to filter its specific menu items below.
+            </p>
+
+            <!-- Restaurant Filter Pills -->
+            <div class="d-flex flex-wrap gap-2 mb-3" id="restaurantFilterPills">
+              <button class="btn btn-sm btn-dark filter-pill active" data-restaurant-id="all">
+                All Restaurants (<span id="totalItemsBadge">0</span>)
+              </button>
+              <!-- Dynamic Pills injected by JavaScript -->
+            </div>
+
+            <!-- Restaurant List Cards / Grid -->
+            <div class="row g-2 overflow-auto" id="restaurantsListContainer" style="max-height: 290px;">
+              <!-- Dynamic Restaurants rendered here -->
+              <div class="col-12 text-center py-4 text-muted">
+                <div class="spinner-border spinner-border-sm text-primary me-2"></div> Loading restaurants...
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Display Menu Items (Bootstrap Cards or Tables) -->
+    <section class="card shadow-sm border-0" id="menuSection">
+      <div class="card-header bg-white border-bottom py-3">
+        <div class="row align-items-center gy-2">
+          
+          <!-- Section Title -->
+          <div class="col-md-4">
+            <h5 class="card-title mb-0 fw-bold d-flex align-items-center gap-2 text-dark">
+              <i class="bi bi-menu-button-wide text-warning fs-4"></i> Menu Items Catalog
+            </h5>
+            <span class="text-muted small" id="catalogSubtitle">Showing all available items</span>
+          </div>
+
+          <!-- Controls: Search, Category Filter, and View Switch -->
+          <div class="col-md-8">
+            <div class="d-flex align-items-center justify-content-md-end gap-2 flex-wrap">
+              
+              <!-- Search Bar -->
+              <div class="input-group input-group-sm" style="max-width: 200px;">
+                <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" id="searchInput" placeholder="Search menu...">
+              </div>
+
+              <!-- Category Filter Dropdown -->
+              <select class="form-select form-select-sm" id="categoryFilter" style="max-width: 150px;">
+                <option value="all">All Categories</option>
+                <option value="Fast Food">Fast Food</option>
+                <option value="Main Course">Main Course</option>
+                <option value="Appetizers">Appetizers</option>
+                <option value="Desserts">Desserts</option>
+                <option value="Beverages">Beverages</option>
+                <option value="Pizza & Pasta">Pizza & Pasta</option>
+              </select>
+
+              <!-- View Mode Toggle: Cards vs Table -->
+              <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-outline-dark active" id="viewCardsBtn" title="Card View">
+                  <i class="bi bi-grid-3x3-gap-fill me-1"></i> Cards
+                </button>
+                <button type="button" class="btn btn-outline-dark" id="viewTableBtn" title="Table View">
+                  <i class="bi bi-table me-1"></i> Table
+                </button>
+              </div>
+
+              <!-- Refresh Button -->
+              <button class="btn btn-sm btn-outline-secondary" id="refreshBtn" title="Refresh from Database">
+                <i class="bi bi-arrow-clockwise"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Catalog Body -->
+      <div class="card-body p-4">
+        
+        <!-- View Container 1: Cards View -->
+        <div id="cardsViewContainer" class="row g-3">
+          <!-- Populated by JavaScript -->
+        </div>
+
+        <!-- View Container 2: Table View (Hidden by default) -->
+        <div id="tableViewContainer" class="table-responsive d-none">
+          <table class="table table-hover align-middle border">
+            <thead class="table-light">
+              <tr>
+                <th scope="col" style="width: 60px;">#ID</th>
+                <th scope="col">Item Details</th>
+                <th scope="col">Restaurant</th>
+                <th scope="col">Category</th>
+                <th scope="col">Price</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="text-end" style="width: 140px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State Container -->
+        <div id="emptyState" class="text-center py-5 d-none">
+          <div class="mb-3 text-muted">
+            <i class="bi bi-basket3 fs-1"></i>
+          </div>
+          <h5 class="fw-bold text-dark">No Menu Items Found</h5>
+          <p class="text-muted small">No items match the current filter or restaurant. Try adding a menu item above.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal 1: Add New Restaurant -->
+  <div class="modal fade" id="addRestaurantModal" tabindex="-1" aria-labelledby="addRestaurantModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title fw-bold" id="addRestaurantModalLabel">
+            <i class="bi bi-shop text-primary me-2"></i> Register New Restaurant
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="addRestaurantForm" novalidate>
+          <div class="modal-body p-4">
+            <div class="mb-3">
+              <label for="restaurantName" class="form-label fw-semibold">Restaurant Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="restaurantName" placeholder="e.g. Royal Spice Kitchen" required>
+              <div class="invalid-feedback">Restaurant name must not be empty.</div>
+            </div>
+            <div class="mb-3">
+              <label for="restaurantAddress" class="form-label fw-semibold">Address / Location <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="restaurantAddress" placeholder="e.g. 124 Main Boulevard, Food Street" required>
+              <div class="invalid-feedback">Address must not be empty.</div>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-6 mb-3">
+                <label for="restaurantCuisine" class="form-label fw-semibold">Cuisine Type</label>
+                <input type="text" class="form-control" id="restaurantCuisine" placeholder="e.g. Continental, Italian">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="restaurantPhone" class="form-label fw-semibold">Phone Number</label>
+                <input type="tel" class="form-control" id="restaurantPhone" placeholder="+1-555-0199">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary fw-bold" id="saveRestaurantBtn">
+              <i class="bi bi-check2-circle me-1"></i> Save Restaurant
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Edit Menu Item (PATCH /menu-items/:id) -->
+  <div class="modal fade" id="editMenuItemModal" tabindex="-1" aria-labelledby="editMenuItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title fw-bold" id="editMenuItemModalLabel">
+            <i class="bi bi-pencil-square text-warning me-2"></i> Edit Menu Item
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="editMenuItemForm" novalidate>
+          <input type="hidden" id="editItemId">
+          <div class="modal-body p-4">
+            <div class="mb-3">
+              <label for="editItemRestaurant" class="form-label fw-semibold">Restaurant <span class="text-danger">*</span></label>
+              <select class="form-select" id="editItemRestaurant" required></select>
+            </div>
+            <div class="mb-3">
+              <label for="editItemName" class="form-label fw-semibold">Item Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="editItemName" required>
+              <div class="invalid-feedback">Item name must not be empty.</div>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-md-6">
+                <label for="editItemPrice" class="form-label fw-semibold">Price ($) <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="editItemPrice" step="0.01" min="0.01" required>
+                <div class="invalid-feedback">Price must be a positive number.</div>
+              </div>
+              <div class="col-md-6">
+                <label for="editItemCategory" class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
+                <select class="form-select" id="editItemCategory" required>
+                  <option value="Fast Food">🍔 Fast Food</option>
+                  <option value="Main Course">🍲 Main Course</option>
+                  <option value="Appetizers">🥗 Appetizers</option>
+                  <option value="Desserts">🍰 Desserts</option>
+                  <option value="Beverages">🥤 Beverages</option>
+                  <option value="Pizza & Pasta">🍕 Pizza & Pasta</option>
+                </select>
+              </div>
+            </div>
+            <div class="mb-3">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="editItemAvailable">
+                <label class="form-check-label fw-semibold" for="editItemAvailable">Available for Ordering</label>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="editItemDescription" class="form-label fw-semibold">Description</label>
+              <textarea class="form-control" id="editItemDescription" rows="2"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-warning fw-bold" id="updateItemBtn">
+              <i class="bi bi-save me-1"></i> Update Menu Item
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: API Key Configuration Modal (For Guard Testing) -->
+  <div class="modal fade" id="apiKeyModal" tabindex="-1" aria-labelledby="apiKeyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title fw-bold" id="apiKeyModalLabel">
+            <i class="bi bi-key-fill text-warning me-2"></i> API Key Settings (Guard Test)
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <p class="small text-muted mb-3">
+            All <code>/menu-items</code> routes are protected by NestJS <code>ApiKeyGuard</code>. The guard validates the <code>x-api-key</code> header. You can change or clear this key to test authorization acceptance (200 OK) or rejection (401 Unauthorized).
+          </p>
+          <div class="mb-3">
+            <label for="apiKeyInput" class="form-label fw-semibold">Active x-api-key Header</label>
+            <input type="text" class="form-control font-monospace" id="apiKeyInput" value="food-quiz-secret-key-2026">
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" id="resetApiKeyBtn">
+              Reset to Default Key
+            </button>
+            <button class="btn btn-sm btn-outline-danger" id="invalidateApiKeyBtn">
+              Set Invalid Key (Test 401 Guard)
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-dark fw-bold" data-bs-dismiss="modal" id="saveApiKeyBtn">
+            Apply Key
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-white-50 py-4 mt-5 border-top border-secondary">
+    <div class="container-fluid px-lg-4 text-center">
+      <p class="mb-1 text-white">
+        <strong>Online Food Ordering System</strong> &bull; Full Stack Web Development Lab Quiz
+      </p>
+      <small class="text-white-50">
+        HTML5 &bull; CSS3 &bull; Bootstrap 5 &bull; Vanilla JavaScript &bull; NestJS &bull; PostgreSQL &bull; TypeORM
+      </small>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 Bundle JS with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Application Vanilla JS -->
+  <script src="js/app.js"></script>
+</body>
+</html>
