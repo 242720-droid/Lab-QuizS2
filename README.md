@@ -169,3 +169,4 @@ This tests:
    - Applied to `/menu-items` controller via `@UseGuards(ApiKeyGuard)`.
    - Validates the `x-api-key` header against the environment `API_KEY`.
    - Rejects unauthorized requests with `401 Unauthorized`.
+# Lab-QuizS2
